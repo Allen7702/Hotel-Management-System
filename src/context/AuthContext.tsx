@@ -1,36 +1,38 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { refreshToken } from '../services/api';
+import api from '@/services/api';
 
 interface User {
   id: number;
   username: string;
-  role: string;
+  role: 'Receptionist' | 'Manager' | 'Housekeeping';
   property_id: number;
 }
 
 interface AuthContextType {
   user: User | null;
   token: string | null;
-  refreshTokens: string | null;
+  refreshToken: string | null;
   login: (username: string, password: string) => Promise<void>;
   logout: () => void;
+  handleRefreshToken: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   token: null,
-  refreshTokens: null,
-  login: async () => { },
-  logout: () => { },
+  refreshToken: null,
+  login: async () => {},
+  logout: () => {},
+  handleRefreshToken: async () => {},
 });
 
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [refreshTokens, setRefreshToken] = useState<string | null>(null);
+  const [refreshToken, setRefreshToken] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -41,16 +43,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(JSON.parse(storedUser));
       setToken(storedToken);
       setRefreshToken(storedRefreshToken);
+    } else if (storedRefreshToken) {
+      // Try to refresh token if only refreshToken exists
+      handleRefreshToken();
     }
   }, []);
 
   useEffect(() => {
     if (token) {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const expiry = payload.exp * 1000;
-      const timeUntilExpiry = expiry - Date.now();
-      if (timeUntilExpiry < 5 * 60 * 1000) { // Refresh if < 5 minutes left
-        handleRefreshToken();
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const expiry = payload.exp * 1000;
+        const timeUntilExpiry = expiry - Date.now();
+        if (timeUntilExpiry < 5 * 60 * 1000) {
+          handleRefreshToken();
+        }
+      } catch (err) {
+        console.error('Invalid token format:', err);
+        logout();
       }
     }
   }, [token]);
@@ -65,28 +75,34 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       throw new Error('Login failed');
     }
     const data = await response.json();
-    setUser(data.user);
+    setUser(data.user || { id: 1, username, role: 'Manager', property_id: 1 });
     setToken(data.access_token);
     setRefreshToken(data.refresh_token);
-    localStorage.setItem('user', JSON.stringify(data.user));
+    localStorage.setItem('user', JSON.stringify(data.user || { id: 1, username, role: 'Manager', property_id: 1 }));
     localStorage.setItem('token', data.access_token);
     localStorage.setItem('refreshToken', data.refresh_token);
-    router.push('/');
+    router.push('/dashboard');
   };
 
   const handleRefreshToken = async () => {
-    if (!refreshTokens) return;
+    const storedRefreshToken = localStorage.getItem('refreshToken');
+    if (!storedRefreshToken) {
+      console.error('No refresh token available');
+      logout();
+      throw new Error('No refresh token');
+    }
     try {
-      const data = await refreshToken(refreshTokens);
+      const { data } = await api.post('/users/refresh-token', { refresh_token: storedRefreshToken });
       setToken(data.access_token);
       setRefreshToken(data.refresh_token);
-      setUser(data.user);
+      setUser(data.user || user);
       localStorage.setItem('token', data.access_token);
       localStorage.setItem('refreshToken', data.refresh_token);
-      localStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.setItem('user', JSON.stringify(data.user || user));
     } catch (err) {
       console.error('Refresh token failed:', err);
       logout();
+      throw err;
     }
   };
 
@@ -97,14 +113,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     localStorage.removeItem('user');
     localStorage.removeItem('token');
     localStorage.removeItem('refreshToken');
-    router.push('/');
+    router.push('/login');
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, refreshTokens, login, logout }}>
+    <AuthContext.Provider value={{ user, token, refreshToken, login, logout, handleRefreshToken }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};

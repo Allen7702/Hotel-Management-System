@@ -2,10 +2,11 @@
 
 import { useState } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
+import { toast } from 'react-toastify';
 import { AiFillEye, AiFillEyeInvisible } from 'react-icons/ai';
+
 interface LoginFormInputs {
-  // email: string;
   username: string;
   password: string;
 }
@@ -15,13 +16,20 @@ export default function LoginPage() {
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormInputs>();
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const onSubmit: SubmitHandler<LoginFormInputs> = async (data) => {
+    setLoading(true);
+    setError(null);
     try {
       await login(data.username, data.password);
-      setError(null);
+      toast.success('Login successful');
     } catch (err) {
-      setError((err as Error).message);
+      const errorMessage = (err as Error).message || 'Login failed';
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -30,7 +38,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen w-1/3  bg-gray-100 flex items-center justify-center flex-col">
+    <div className="min-h-screen w-1/3 bg-gray-100 flex items-center justify-center flex-col">
       <div className="flex items-center justify-center mb-6">
         <div className="w-12 h-12 bg-amber-600 rounded flex items-center justify-center">
           <span className="text-white font-bold text-2xl">NH</span>
@@ -38,11 +46,10 @@ export default function LoginPage() {
         <h1 className="text-2xl font-semibold text-gray-800 ml-2">Nuru Hotel</h1>
       </div>
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-
         <h2 className="text-xl font-medium text-gray-700 mb-4 text-left">Sign in</h2>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="space-y-4">
+          <div className="space-y-2">
             <input
               type="text"
               placeholder="Enter your username"
@@ -51,7 +58,7 @@ export default function LoginPage() {
             />
             {errors.username && <p className="text-red-500 text-sm">{errors.username.message}</p>}
           </div>
-          <div className="relative">
+          <div className="relative space-y-2">
             <input
               type={showPassword ? 'text' : 'password'}
               placeholder="Enter your password"
@@ -67,6 +74,7 @@ export default function LoginPage() {
             {errors.password && <p className="text-red-500 text-sm">{errors.password.message}</p>}
           </div>
 
+          {/* Uncomment if implementing these features */}
           {/* <div className="flex items-center justify-between">
             <div className="flex items-center">
               <input
@@ -78,12 +86,14 @@ export default function LoginPage() {
             </div>
             <a href="/forgot-password" className="text-amber-600 hover:underline">Forgot password?</a>
           </div> */}
+
           {error && <p className="text-red-500 text-sm">{error}</p>}
           <button
             type="submit"
-            className="w-full bg-amber-600 text-white p-3 rounded hover:bg-amber-700 transition duration-200"
+            disabled={loading}
+            className="w-full bg-amber-600 text-white p-3 rounded hover:bg-amber-700 transition duration-200 disabled:bg-amber-400 disabled:cursor-not-allowed"
           >
-            Sign in
+            {loading ? 'Signing in...' : 'Sign in'}
           </button>
         </form>
       </div>

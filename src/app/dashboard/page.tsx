@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react';
 import { getRooms, getBookings } from '@/services/api';
 import { toast } from 'react-toastify';
+import Card from '@/components/Ui/Card';
 
 interface Room {
   id: number;
@@ -76,6 +77,7 @@ export default function Dashboard() {
       </div>
 
       {/* Metrics Cards */}
+      <Card  label={'Total Clients'} icon={'symbol'} amount={'300'} description={'see what;s inside'} />
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <div className="bg-white p-4 rounded-lg shadow hover:shadow-md transition-shadow">
           <h3 className="text-gray-600 text-sm">Total Rooms</h3>

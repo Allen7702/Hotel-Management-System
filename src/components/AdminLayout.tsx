@@ -1,17 +1,25 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { ToastContainer } from 'react-toastify';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { setupAxiosInterceptors } from '@/services/api';
 import LoginPage from '@/app/login/page';
 import { useEffect } from 'react';
 import AppSidebar from '@/layout/AppSidebar';
-import { SidebarProvider } from '@/context/SidebarContext';
+import { SidebarProvider, useSidebar } from '@/context/SidebarContext';
+import AppHeader from '@/layout/AppHeader';
+import Backdrop from '@/layout/Backdrop';
 
-const ClientLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const pathname = usePathname();
   const { user, token, handleRefreshToken } = useAuth();
+  const { isExpanded, isHovered, isMobileOpen } = useSidebar();
+
+  const mainContentMargin = isMobileOpen
+    ? "ml-0"
+    : isExpanded || isHovered
+      ? "lg:ml-[260px]"
+      : "lg:ml-[90px]";
 
   useEffect(() => {
     setupAxiosInterceptors(token, handleRefreshToken);
@@ -26,20 +34,28 @@ const ClientLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   }
 
   return (
-    <div className="flex text-black bg-gray-100 h-full">
-      <SidebarProvider>
-        <AppSidebar />
-        <div className="ml-64 flex-1 p-6 flex-grow bg-gray-100">{children}</div>
-        <ToastContainer position="top-right" autoClose={3000} />
-      </SidebarProvider>
+    <div className="min-h-screen xl:flex">
+      <AppSidebar />
+      <Backdrop />
+      <div
+        className={`flex-1 transition-all  duration-300 ease-in-out ${mainContentMargin}`}
+      >
+        <AppHeader />
+        <div className="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">{children}</div>
+      </div>
     </div>
   );
 };
 
+
 export default function AuthWrappedLayout({ children }: { children: React.ReactNode }) {
   return (
     <AuthProvider>
-      <ClientLayout>{children}</ClientLayout>
+      <SidebarProvider>
+        <AdminLayout>{children}</AdminLayout>
+      </SidebarProvider>
     </AuthProvider>
+
+
   );
 }

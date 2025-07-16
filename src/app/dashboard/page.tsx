@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { getRooms, getBookings } from '@/services/api';
 import { toast } from 'react-toastify';
-import Card from '@/components/Ui/Card';
+import Card from '@/components/ui/Card';
 
 interface Room {
   id: number;

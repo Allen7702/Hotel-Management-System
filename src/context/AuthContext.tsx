@@ -7,6 +7,7 @@ import api from '@/services/api';
 interface User {
   id: number;
   username: string;
+  email: string;
   role: 'Receptionist' | 'Manager' | 'Housekeeping';
   property_id: number;
 }

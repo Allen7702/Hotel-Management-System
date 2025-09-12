@@ -5,6 +5,7 @@ import { getRooms, getGuests, createBooking, Room, Guest, Booking, getBookings }
 import { toast } from 'react-toastify';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
+import BookPage from '@/components/booking/bookings';
 
 const localizer = momentLocalizer(moment);
 
@@ -72,103 +73,104 @@ export default function Bookings() {
   if (loading) return <div>Loading...</div>;
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Bookings</h1>
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold mb-2">New Booking</h2>
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <select
-            value={form.room_id}
-            onChange={(e) => setForm({ ...form, room_id: e.target.value })}
-            className="p-2 border rounded"
-            required
-          >
-            <option value="">Select Room</option>
-            {rooms.filter((r) => r.status === 'Available').map((room) => (
-              <option key={room.id} value={room.id}>Room {room.room_number}</option>
-            ))}
-          </select>
-          <select
-            value={form.guest_id}
-            onChange={(e) => setForm({ ...form, guest_id: e.target.value })}
-            className="p-2 border rounded"
-            required
-          >
-            <option value="">Select Guest</option>
-            {guests.map((guest) => (
-              <option key={guest.id} value={guest.id}>{guest.name}</option>
-            ))}
-          </select>
-          <input
-            type="date"
-            value={form.check_in}
-            onChange={(e) => setForm({ ...form, check_in: e.target.value })}
-            className="p-2 border rounded"
-            required
-          />
-          <input
-            type="date"
-            value={form.check_out}
-            onChange={(e) => setForm({ ...form, check_out: e.target.value })}
-            className="p-2 border rounded"
-            required
-          />
-          <button type="submit" className="p-2 bg-blue-500 text-white rounded">
-            Create Booking
-          </button>
-        </form>
-      </div>
-      <h2 className="text-xl font-semibold mb-2">Booking Calendar</h2>
-      <Calendar
-        localizer={localizer}
-        events={events}
-        startAccessor="start"
-        endAccessor="end"
-        style={{ height: 500 }}
-        className="mb-6"
-      />
-      <h2 className="text-xl font-semibold mb-2">Current Bookings</h2>
-      <table className="w-full border-collapse">
-        <thead>
-          <tr className="bg-gray-200">
-            <th className="p-2">Guest</th>
-            <th className="p-2">Room</th>
-            <th className="p-2">Check-in</th>
-            <th className="p-2">Check-out</th>
-            <th className="p-2">Status</th>
-            <th className="p-2">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {bookings.map((booking) => (
-            <tr key={booking.id} className="border-b">
-              <td className="p-2">{guests.find((g) => g.id === booking.guest_id)?.name}</td>
-              <td className="p-2">{rooms.find((r) => r.id === booking.room_id)?.room_number}</td>
-              <td className="p-2">{booking.check_in}</td>
-              <td className="p-2">{booking.check_out}</td>
-              <td className="p-2">{booking.status}</td>
-              <td className="p-2">
-                {booking.status === 'Active' && (
-                  <button
-                    onClick={() => handleCheckInOut(booking.id, 'check-out')}
-                    className="text-blue-500 mr-2"
-                  >
-                    Check-out
-                  </button>
-                )}
-                {booking.status === 'Completed' && (
-                  <button
-                    onClick={() => handleCheckInOut(booking.id, 'check-in')}
-                    className="text-blue-500"
-                  >
-                    Check-in
-                  </button>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <BookPage/>
+    // <div className="p-6">
+    //   <h1 className="text-2xl font-bold mb-4">Bookings</h1>
+    //   <div className="mb-6">
+    //     <h2 className="text-xl font-semibold mb-2">New Booking</h2>
+    //     <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    //       <select
+    //         value={form.room_id}
+    //         onChange={(e) => setForm({ ...form, room_id: e.target.value })}
+    //         className="p-2 border rounded"
+    //         required
+    //       >
+    //         <option value="">Select Room</option>
+    //         {rooms.filter((r) => r.status === 'Available').map((room) => (
+    //           <option key={room.id} value={room.id}>Room {room.room_number}</option>
+    //         ))}
+    //       </select>
+    //       <select
+    //         value={form.guest_id}
+    //         onChange={(e) => setForm({ ...form, guest_id: e.target.value })}
+    //         className="p-2 border rounded"
+    //         required
+    //       >
+    //         <option value="">Select Guest</option>
+    //         {guests.map((guest) => (
+    //           <option key={guest.id} value={guest.id}>{guest.name}</option>
+    //         ))}
+    //       </select>
+    //       <input
+    //         type="date"
+    //         value={form.check_in}
+    //         onChange={(e) => setForm({ ...form, check_in: e.target.value })}
+    //         className="p-2 border rounded"
+    //         required
+    //       />
+    //       <input
+    //         type="date"
+    //         value={form.check_out}
+    //         onChange={(e) => setForm({ ...form, check_out: e.target.value })}
+    //         className="p-2 border rounded"
+    //         required
+    //       />
+    //       <button type="submit" className="p-2 bg-blue-500 text-white rounded">
+    //         Create Booking
+    //       </button>
+    //     </form>
+    //   </div>
+    //   <h2 className="text-xl font-semibold mb-2">Booking Calendar</h2>
+    //   <Calendar
+    //     localizer={localizer}
+    //     events={events}
+    //     startAccessor="start"
+    //     endAccessor="end"
+    //     style={{ height: 500 }}
+    //     className="mb-6"
+    //   />
+    //   <h2 className="text-xl font-semibold mb-2">Current Bookings</h2>
+    //   <table className="w-full border-collapse">
+    //     <thead>
+    //       <tr className="bg-gray-200">
+    //         <th className="p-2">Guest</th>
+    //         <th className="p-2">Room</th>
+    //         <th className="p-2">Check-in</th>
+    //         <th className="p-2">Check-out</th>
+    //         <th className="p-2">Status</th>
+    //         <th className="p-2">Actions</th>
+    //       </tr>
+    //     </thead>
+    //     <tbody>
+    //       {bookings.map((booking) => (
+    //         <tr key={booking.id} className="border-b">
+    //           <td className="p-2">{guests.find((g) => g.id === booking.guest_id)?.name}</td>
+    //           <td className="p-2">{rooms.find((r) => r.id === booking.room_id)?.room_number}</td>
+    //           <td className="p-2">{booking.check_in}</td>
+    //           <td className="p-2">{booking.check_out}</td>
+    //           <td className="p-2">{booking.status}</td>
+    //           <td className="p-2">
+    //             {booking.status === 'Active' && (
+    //               <button
+    //                 onClick={() => handleCheckInOut(booking.id, 'check-out')}
+    //                 className="text-blue-500 mr-2"
+    //               >
+    //                 Check-out
+    //               </button>
+    //             )}
+    //             {booking.status === 'Completed' && (
+    //               <button
+    //                 onClick={() => handleCheckInOut(booking.id, 'check-in')}
+    //                 className="text-blue-500"
+    //               >
+    //                 Check-in
+    //               </button>
+    //             )}
+    //           </td>
+    //         </tr>
+    //       ))}
+    //     </tbody>
+    //   </table>
+    // </div>
   );
 }

@@ -1,39 +1,24 @@
-import { cn } from "@/lib/utils";
-import React from "react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+'use client';
 
-export type CardProps = {
-    label: string;
-    //   icon: LucideIcon;
-    icon: React.ElementType;
-    amount: string;
-    description: string;
-};
+import React from 'react';
 
-export default function Card(props: CardProps) {
-    return (
-        <CardContent>
-            <section className="flex justify-between gap-2">
-                {/* label */}
-                <p className="text-sm">{props.label}</p>
-                {/* icon */}
-                <props.icon className="h-4 w-4 text-gray-400" />
-            </section>
-            <section className="flex flex-col gap-1">
-                <h2 className="text-2xl font-semibold">{props.amount}</h2>
-                <p className="text-xs text-gray-500">{props.description}</p>
-            </section>
-        </CardContent>
-    );
+interface CardProps {
+  title: string;
+  value: number;
+  description: string;
+  icon: React.ReactElement<any>;  
 }
 
-export function CardContent(props: React.HTMLAttributes<HTMLDivElement>) {
-    return (
-        <div
-            {...props}
-            className={cn(
-                "flex w-full flex-col gap-3 rounded-xl border p-5 shadow",
-                props.className
-            )}
-        />
-    );
+export default function Card({ title, value, description, icon }: CardProps) {
+  return (
+    <div className="bg-white p-4 rounded-lg shadow hover:shadow-md transition-shadow">
+      <div className="flex items-center justify-between">
+        <h3 className="text-gray-600 text-sm">{title}</h3>
+        {React.cloneElement(icon, { className: `${icon.props.className || ''} w-8 h-8 primary-color`.trim() })}
+      </div>
+      <p className="text-2xl font-bold primary-color mt-2">{value}</p>
+      <p className="text-xs text-gray-500">{description}</p>
+    </div>
+  );
 }
